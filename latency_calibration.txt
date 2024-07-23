@@ -1,0 +1,19 @@
+gripper e2e latency: 0.265
+gripper obs latency: 0.024
+gripper act latency: 0.241
+
+robot e2e latency: 0.1
+robot obs latency: 0.0002
+robot act latency: 0.1
+
+camera capture to receive latency: 0.17
+
+control_frequency = 8
+
+BimanualUmiEnv
+- max_pos_speed: 2.0,
+- max_rot_speed: 6.0,
+
+Pendant
+- Slider Speed: 60%
+- Installation Joint Limits Maximum Speed: 90 deg
