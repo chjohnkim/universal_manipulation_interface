@@ -14,7 +14,8 @@ import numpy as np
 from collections import deque
 from tqdm import tqdm
 from multiprocessing.managers import SharedMemoryManager
-from umi.real_world.wsg_controller import WSGController
+#from umi.real_world.wsg_controller import WSGController
+from umi.real_world.gripper_controller import GripperController as WSGController
 from umi.common.precise_sleep import precise_sleep
 from umi.common.latency_util import get_latency
 from matplotlib import pyplot as plt

@@ -71,6 +71,9 @@ def solve_table_collision(ee_pose, gripper_width, height_threshold):
     rot_mat = st.Rotation.from_rotvec(ee_pose[3:6]).as_matrix()
     transformed_keypoints = np.transpose(rot_mat @ np.transpose(keypoints)) + ee_pose[:3]
     delta = max(height_threshold - np.min(transformed_keypoints[:, 2]), 0)
+    if delta > 0:
+        print(f'avoid collision with table: height_threshold={height_threshold}, min_height={np.min(transformed_keypoints[:, 2])}')
+        print(f'gripper width: {gripper_width} ee pose: {ee_pose[:3]}')
     ee_pose[2] += delta
 
 def solve_sphere_collision(ee_poses, robots_config):
@@ -112,12 +115,12 @@ def solve_sphere_collision(ee_poses, robots_config):
 @click.option('--match_dataset', '-m', default=None, help='Dataset used to overlay and adjust initial condition')
 @click.option('--match_episode', '-me', default=None, type=int, help='Match specific episode from the match dataset')
 @click.option('--match_camera', '-mc', default=0, type=int)
-@click.option('--camera_reorder', '-cr', default='0')
+@click.option('--camera_reorder', '-cr', default='1')
 @click.option('--vis_camera_idx', default=0, type=int, help="Which RealSense camera to visualize.")
 @click.option('--init_joints', '-j', is_flag=True, default=False, help="Whether to initialize robot joint configuration in the beginning.")
 @click.option('--steps_per_inference', '-si', default=6, type=int, help="Action horizon for inference.")
 @click.option('--max_duration', '-md', default=2000000, help='Max duration for each epoch in seconds.')
-@click.option('--frequency', '-f', default=10, type=float, help="Control frequency in Hz.")
+@click.option('--frequency', '-f', default=8, type=float, help="Control frequency in Hz.")
 @click.option('--command_latency', '-cl', default=0.01, type=float, help="Latency between receiving SapceMouse command to executing on Robot in Sec.")
 @click.option('-nm', '--no_mirror', is_flag=True, default=False)
 @click.option('-sf', '--sim_fov', type=float, default=None)
@@ -130,8 +133,8 @@ def main(input, output, robot_config,
     steps_per_inference, max_duration,
     frequency, command_latency, 
     no_mirror, sim_fov, camera_intrinsics, mirror_swap):
-    max_gripper_width = 0.09
-    gripper_speed = 0.2
+    max_gripper_width = 0.08
+    gripper_speed = 0.1
     
     # load robot config file
     robot_config_data = yaml.safe_load(open(os.path.expanduser(robot_config), 'r'))
@@ -385,8 +388,8 @@ def main(input, output, robot_config,
                     # get teleop command
                     sm_state = sm.get_motion_state_transformed()
                     # print(sm_state)
-                    dpos = sm_state[:3] * (0.5 / frequency)
-                    drot_xyz = sm_state[3:] * (1.5 / frequency)
+                    dpos = sm_state[:3] * (0.1 / frequency) # (0.5 / frequency)
+                    drot_xyz = sm_state[3:] * (0 / frequency) # (1.5 / frequency)
 
                     drot = st.Rotation.from_euler('xyz', drot_xyz)
                     for robot_idx in control_robot_idx_list:

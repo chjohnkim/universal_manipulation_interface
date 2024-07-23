@@ -261,6 +261,9 @@ class RTDEInterpolationController(mp.Process):
             iter_idx = 0
             keep_running = True
             while keep_running:
+                if rtde_r.isConnected() == False:
+                    rtde_r.reconnect()
+                    print('************* rtde_r reconnected *************')
                 # start control iteration
                 # t_start = rtde_c.initPeriod()
 

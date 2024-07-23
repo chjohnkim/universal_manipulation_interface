@@ -15,18 +15,18 @@ from multiprocessing.managers import SharedMemoryManager
 import scipy.spatial.transform as st
 from umi.real_world.spacemouse_shared_memory import Spacemouse
 from umi.real_world.rtde_interpolation_controller import RTDEInterpolationController
-from umi.real_world.franka_interpolation_controller import FrankaInterpolationController
+#from umi.real_world.franka_interpolation_controller import FrankaInterpolationController
 from umi.common.precise_sleep import precise_wait
 from umi.common.latency_util import get_latency
 from matplotlib import pyplot as plt
 
 # %%
 @click.command()
-@click.option('-rh', '--robot_hostname', default='172.16.0.3')
+@click.option('-rh', '--robot_hostname', default='192.168.0.11')
 @click.option('-f', '--frequency', type=float, default=30)
 def main(robot_hostname, frequency):
-    max_pos_speed = 0.5
-    max_rot_speed = 1.2
+    max_pos_speed = 0.25 # 0.5
+    max_rot_speed = 0.16 # 1.2
     cube_diag = np.linalg.norm([1,1,1])
     tcp_offset = 0.21
     # tcp_offset = 0
@@ -34,24 +34,24 @@ def main(robot_hostname, frequency):
     command_latency = dt / 2
 
     with SharedMemoryManager() as shm_manager:
-        # with RTDEInterpolationController(
-        #     shm_manager=shm_manager,
-        #     robot_ip=robot_hostname,
-        #     frequency=500,
-        #     lookahead_time=0.1,
-        #     gain=300,
-        #     max_pos_speed=max_pos_speed*cube_diag,
-        #     max_rot_speed=max_rot_speed*cube_diag,
-        #     tcp_offset_pose=[0,0,tcp_offset,0,0,0],
-        #     get_max_k=10000,
-        #     verbose=False
-        with FrankaInterpolationController(
+        with RTDEInterpolationController(
             shm_manager=shm_manager,
             robot_ip=robot_hostname,
-            frequency=200,
-            Kx_scale=np.array([0.8,0.8,1.2,3.0,3.0,3.0]),
-            Kxd_scale=np.array([2.0,2.0,2.0,2.0,2.0,2.0]),
+            frequency=500,
+            lookahead_time=0.1,
+            gain=300,
+            max_pos_speed=max_pos_speed*cube_diag,
+            max_rot_speed=max_rot_speed*cube_diag,
+            tcp_offset_pose=[0,0,tcp_offset,0,0,0],
+            get_max_k=10000,
             verbose=False
+        #with FrankaInterpolationController(
+        #    shm_manager=shm_manager,
+        #    robot_ip=robot_hostname,
+        #    frequency=200,
+        #    Kx_scale=np.array([0.8,0.8,1.2,3.0,3.0,3.0]),
+        #    Kxd_scale=np.array([2.0,2.0,2.0,2.0,2.0,2.0]),
+        #    verbose=False
         ) as controller,\
         Spacemouse(
             shm_manager=shm_manager

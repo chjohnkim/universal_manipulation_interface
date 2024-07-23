@@ -6,8 +6,9 @@ import shutil
 import math
 from multiprocessing.managers import SharedMemoryManager
 from umi.real_world.rtde_interpolation_controller import RTDEInterpolationController
-from umi.real_world.wsg_controller import WSGController
-from umi.real_world.franka_interpolation_controller import FrankaInterpolationController
+#from umi.real_world.wsg_controller import WSGController
+from umi.real_world.gripper_controller import GripperController as WSGController
+#from umi.real_world.franka_interpolation_controller import FrankaInterpolationController
 from umi.real_world.multi_uvc_camera import MultiUvcCamera, VideoRecorder
 from diffusion_policy.common.timestamp_accumulator import (
     TimestampActionAccumulator,
@@ -230,16 +231,16 @@ class BimanualUmiEnv:
                     receive_keys=None,
                     receive_latency=rc['robot_obs_latency']
                 )
-            elif rc['robot_type'].startswith('franka'):
-                this_robot = FrankaInterpolationController(
-                    shm_manager=shm_manager,
-                    robot_ip=rc['robot_ip'],
-                    frequency=200,
-                    Kx_scale=1.0,
-                    Kxd_scale=np.array([2.0,1.5,2.0,1.0,1.0,1.0]),
-                    verbose=False,
-                    receive_latency=rc['robot_obs_latency']
-                )
+            #elif rc['robot_type'].startswith('franka'):
+            #    this_robot = FrankaInterpolationController(
+            #        shm_manager=shm_manager,
+            #        robot_ip=rc['robot_ip'],
+            #        frequency=200,
+            #        Kx_scale=1.0,
+            #        Kxd_scale=np.array([2.0,1.5,2.0,1.0,1.0,1.0]),
+            #        verbose=False,
+            #        receive_latency=rc['robot_obs_latency']
+            #    )
             else:
                 raise NotImplementedError()
             robots.append(this_robot)
@@ -456,6 +457,9 @@ class BimanualUmiEnv:
             # update obs_data
             obs_data.update(gripper_obs)
 
+        #for robot_idx, last_robot_data in enumerate(last_robots_data):
+        #    print(last_robot_data['ActualTCPPose'][0])
+
         # accumulate obs
         if self.obs_accumulator is not None:
             for robot_idx, last_robot_data in enumerate(last_robots_data):
@@ -467,7 +471,7 @@ class BimanualUmiEnv:
                     },
                     timestamps=last_robot_data['robot_timestamp']
                 )
-
+                
             for robot_idx, last_gripper_data in enumerate(last_grippers_data):
                 self.obs_accumulator.put(
                     data={
