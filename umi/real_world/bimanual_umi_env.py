@@ -75,6 +75,7 @@ class BimanualUmiEnv:
 
         # Find and reset all Elgato capture cards.
         # Required to workaround a firmware bug.
+        print('Resetting elgato devices...')
         reset_all_elgato_devices()
 
         # Wait for all v4l cameras to be back online
@@ -215,7 +216,7 @@ class BimanualUmiEnv:
                 this_robot = RTDEInterpolationController(
                     shm_manager=shm_manager,
                     robot_ip=rc['robot_ip'],
-                    frequency=500 if rc['robot_type'] == 'ur5e' else 125,
+                    frequency=100 if rc['robot_type'] == 'ur5e' else 125,
                     lookahead_time=0.1,
                     gain=300,
                     max_pos_speed=max_pos_speed*cube_diag,
@@ -251,7 +252,7 @@ class BimanualUmiEnv:
                 hostname=gc['gripper_ip'],
                 port=gc['gripper_port'],
                 receive_latency=gc['gripper_obs_latency'],
-                use_meters=True
+                use_meters=False
             )
 
             grippers.append(this_gripper)

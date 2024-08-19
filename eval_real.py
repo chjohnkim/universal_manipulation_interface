@@ -130,9 +130,9 @@ def main(input, output, robot_config,
     steps_per_inference, max_duration,
     frequency, command_latency, 
     no_mirror, sim_fov, camera_intrinsics, mirror_swap):
-    max_gripper_width = 0.08
-    gripper_speed = 0.1
-    
+    max_gripper_width = 1 # 0.08
+    gripper_speed = 0.5 # 0.1
+    t0 = time.time()
     # load robot config file
     robot_config_data = yaml.safe_load(open(os.path.expanduser(robot_config), 'r'))
     
@@ -225,6 +225,7 @@ def main(input, output, robot_config,
             # have to be done after fork to prevent 
             # duplicating CUDA context with ffmpeg nvenc
             cls = hydra.utils.get_class(cfg._target_)
+            print('Loading workspace...')
             workspace = cls(cfg)
             workspace: BaseWorkspace
             workspace.load_payload(payload, exclude_keys=None, include_keys=None)

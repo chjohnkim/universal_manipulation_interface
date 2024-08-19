@@ -125,7 +125,7 @@ class RTDEInterpolationController(mp.Process):
                 'TargetQ',
                 'TargetQd'
             ]
-        rtde_r = RTDEReceiveInterface(hostname=robot_ip)
+        rtde_r = RTDEReceiveInterface(hostname=robot_ip, frequency=self.frequency)
         example = dict()
         for key in receive_keys:
             example[key] = np.array(getattr(rtde_r, 'get'+key)())
@@ -226,8 +226,8 @@ class RTDEInterpolationController(mp.Process):
 
         # start rtde
         robot_ip = self.robot_ip
-        rtde_c = RTDEControlInterface(hostname=robot_ip)
-        rtde_r = RTDEReceiveInterface(hostname=robot_ip)
+        rtde_c = RTDEControlInterface(hostname=robot_ip, frequency=self.frequency)
+        rtde_r = RTDEReceiveInterface(hostname=robot_ip, frequency=self.frequency)
 
         try:
             if self.verbose:
@@ -262,8 +262,13 @@ class RTDEInterpolationController(mp.Process):
             keep_running = True
             while keep_running:
                 if rtde_r.isConnected() == False:
+                    t = time.time()
                     rtde_r.reconnect()
-                    print('************* rtde_r reconnected *************')
+                    print(f'************* rtde_r reconnected: {time.time() - t} *************')
+                if rtde_c.isConnected() == False:
+                    t = time.time()
+                    rtde_c.reconnect()
+                    print(f'************* rtde_c reconnected: {time.time() - t} *************')
                 # start control iteration
                 # t_start = rtde_c.initPeriod()
 

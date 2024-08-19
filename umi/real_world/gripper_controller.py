@@ -7,7 +7,8 @@ from umi.shared_memory.shared_memory_queue import (
     SharedMemoryQueue, Empty)
 from umi.shared_memory.shared_memory_ring_buffer import SharedMemoryRingBuffer
 from umi.common.precise_sleep import precise_wait
-from umi.real_world.gripper_driver import GripperDriver
+#from umi.real_world.gripper_driver import GripperDriver
+from umi.real_world.pruner_driver import GripperDriver 
 from umi.common.pose_trajectory_interpolator import PoseTrajectoryInterpolator
 
 
@@ -21,7 +22,7 @@ class GripperController(mp.Process):
             shm_manager: SharedMemoryManager,
             hostname,
             port=1000,
-            frequency=30,
+            frequency=20,
             home_to_open=True,
             move_max_speed=200.0,
             get_max_k=None,

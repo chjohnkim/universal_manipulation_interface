@@ -6,10 +6,11 @@
       "robot_type": "ur5e",
       "robot_ip": "192.168.0.11",
       #"robot_obs_latency": 0.0001, "robot_action_latency": 0.1, "tcp_offset": 0.235,
+      #"robot_obs_latency": 0.0002, "robot_action_latency": 0.1, "tcp_offset": 0.235,
       "robot_obs_latency": 0.0002, "robot_action_latency": 0.1, "tcp_offset": 0.235,
       # table height for finger-table collision avoidance
       # -inf to disable
-      "height_threshold": 0.005, #-0.024,
+      "height_threshold": -0.08, #-0.024,
       # sphere collision primitive size and location for inter-gripper collision avoidance
       # 0 to disable
       "sphere_radius": 0.1, "sphere_center": [0, -0.06, -0.185]
