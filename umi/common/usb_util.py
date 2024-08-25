@@ -24,6 +24,8 @@ def create_usb_list():
             if not category:
                 continue
             categoryinfo = category.strip().split()
+            if len(categoryinfo)==0:
+                continue
             if categoryinfo[0] == 'iManufacturer':
                 manufacturer_info = ' '.join(categoryinfo[2:])
                 device_dict['manufacturer'] = manufacturer_info

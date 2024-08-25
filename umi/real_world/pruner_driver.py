@@ -249,6 +249,7 @@ class GripperDriver(object):
                 position, res_p = self.get_position() # Position in encoder units
                 # Determine the position of the gripper wrt the open and closed positions as a fraction
                 position = (position - self.open_pos) / (self.closed_pos - self.open_pos) 
+                position = 0.0 if position < 0.1 else 1.0
                 #velocity, res_v = self.get_velocity() # Velocity in rpm
                 #current, res_c = self.get_current() # Current in mA
                 res = res_p #and res_v and res_c
