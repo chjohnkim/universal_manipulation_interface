@@ -76,6 +76,41 @@ def solve_table_collision(ee_pose, gripper_width, height_threshold):
     delta = max(height_threshold - np.min(transformed_keypoints[:, 2]), 0)
     ee_pose[2] += delta
 
+def solve_ground_collision(ee_pose, height_threshold):
+    finger_thickness = 0.0255
+    gripper_width = 0.08
+    keypoints = list()
+    for dx in [-1, 1]:
+        for dy in [-1, 1]:
+            keypoints.append((dx * gripper_width / 2, dy * finger_thickness / 2, 0))
+    # Add keypoints for camera
+    camera_width = 0.06
+    camera_height = 0.09
+    camera_depth = 0.0225
+    camera_offset = 0.13
+    for dx in [-1, 1]:
+        for dy in [1, -1]: # Real camera on -1, but safer to have both
+            for dz in [-1, 1]:
+                keypoints.append((dx * camera_width, dy * camera_height, -camera_offset + dz * camera_depth))
+    keypoints = np.asarray(keypoints)
+    rot_mat = st.Rotation.from_rotvec(ee_pose[3:6]).as_matrix()
+    transformed_keypoints = np.transpose(rot_mat @ np.transpose(keypoints)) + ee_pose[:3]
+    delta = max(height_threshold - np.min(transformed_keypoints[:, 2]), 0)
+    ee_pose[2] += delta
+
+def solve_husky_collision(ee_pose, husky_threshold):
+    wrist_diameter = 0.08
+    tip_to_wrist = -0.37
+    keypoints = list()
+    for dx in [-1, 1]:
+        for dy in [-1, 1]:
+            keypoints.append((dx * wrist_diameter / 2, dy * wrist_diameter / 2, tip_to_wrist))
+    keypoints = np.asarray(keypoints)
+    rot_mat = st.Rotation.from_rotvec(ee_pose[3:6]).as_matrix()
+    transformed_keypoints = np.transpose(rot_mat @ np.transpose(keypoints)) + ee_pose[:3]
+    delta = min(husky_threshold - np.max(transformed_keypoints[:, 1]), 0)
+    ee_pose[1] += delta
+
 def solve_sphere_collision(ee_poses, robots_config):
     num_robot = len(robots_config)
     this_that_mat = np.identity(4)
@@ -426,10 +461,16 @@ def main(input, output, robot_config,
 
                     # solve collision with table
                     for robot_idx in control_robot_idx_list:
-                        solve_table_collision(
+                        #solve_table_collision(
+                        #    ee_pose=target_pose[robot_idx],
+                        #    gripper_width=gripper_target_pos[robot_idx],
+                        #    height_threshold=robots_config[robot_idx]['height_threshold'])
+                        solve_ground_collision(
                             ee_pose=target_pose[robot_idx],
-                            gripper_width=gripper_target_pos[robot_idx],
                             height_threshold=robots_config[robot_idx]['height_threshold'])
+                        solve_husky_collision(
+                            ee_pose=target_pose[robot_idx],
+                            husky_threshold=robots_config[robot_idx]['husky_threshold'])
                     
                     # solve collison between two robots
                     solve_sphere_collision(
@@ -507,12 +548,18 @@ def main(input, output, robot_config,
                         assert this_target_poses.shape[1] == len(robots_config) * 7
                         for target_pose in this_target_poses:
                             for robot_idx in range(len(robots_config)):
-                                solve_table_collision(
+                                #solve_table_collision(
+                                #    ee_pose=target_pose[robot_idx * 7: robot_idx * 7 + 6],
+                                #    gripper_width=target_pose[robot_idx * 7 + 6],
+                                #    height_threshold=robots_config[robot_idx]['height_threshold']
+                                #)
+                                solve_ground_collision(
                                     ee_pose=target_pose[robot_idx * 7: robot_idx * 7 + 6],
-                                    gripper_width=target_pose[robot_idx * 7 + 6],
-                                    height_threshold=robots_config[robot_idx]['height_threshold']
-                                )
-                            
+                                    height_threshold=robots_config[robot_idx]['height_threshold'])
+                                solve_husky_collision(
+                                    ee_pose=target_pose[robot_idx * 7: robot_idx * 7 + 6],
+                                    husky_threshold=robots_config[robot_idx]['husky_threshold'])
+                           
                             # solve collison between two robots
                             solve_sphere_collision(
                                 ee_poses=target_pose.reshape([len(robots_config), -1]),
