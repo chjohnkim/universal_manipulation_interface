@@ -61,6 +61,9 @@ from umi.common.pose_util import pose_to_mat, mat_to_pose
 
 OmegaConf.register_new_resolver("eval", eval, replace=True)
 
+DEFAULT_HOME_POSE = np.array([[0.12357797, -0.42613301,  0.12051668,  0.07648574, -2.91123652,  0.97365308]])
+DEFAULT_PLACE_POSE = np.array([[-0.39994505, -0.19403139,  0.13250884, -1.61301315, -2.01612091,  0.62840259]])
+
 def solve_table_collision(ee_pose, gripper_width, height_threshold):
     finger_thickness = 25.5 / 1000
     keypoints = list()
@@ -112,7 +115,7 @@ def solve_sphere_collision(ee_poses, robots_config):
 @click.option('--match_dataset', '-m', default=None, help='Dataset used to overlay and adjust initial condition')
 @click.option('--match_episode', '-me', default=None, type=int, help='Match specific episode from the match dataset')
 @click.option('--match_camera', '-mc', default=0, type=int)
-@click.option('--camera_reorder', '-cr', default='1')
+@click.option('--camera_reorder', '-cr', default='0')
 @click.option('--vis_camera_idx', default=0, type=int, help="Which RealSense camera to visualize.")
 @click.option('--init_joints', '-j', is_flag=True, default=False, help="Whether to initialize robot joint configuration in the beginning.")
 @click.option('--steps_per_inference', '-si', default=6, type=int, help="Action horizon for inference.")
@@ -154,7 +157,8 @@ def main(input, output, robot_config,
 
     # setup experiment
     dt = 1/frequency
-
+    execute_place = False 
+    
     obs_res = get_real_obs_resolution(cfg.task.shape_meta)
     # load fisheye converter
     fisheye_converter = None
@@ -378,6 +382,22 @@ def main(input, output, robot_config,
                             control_robot_idx_list = [0]
                         elif key_stroke == KeyCode(char='2'):
                             control_robot_idx_list = [1]
+                        elif key_stroke == KeyCode(char='h'):
+                            target_pose = np.copy(DEFAULT_HOME_POSE)                
+                        elif key_stroke == KeyCode(char='p'):
+                            execute_place = True
+                            target_pose = np.copy(DEFAULT_PLACE_POSE)     
+                        elif key_stroke == KeyCode(char='t'):
+                            print(f"Gripper Pose: {np.asarray([gs['gripper_position'] for gs in env.get_gripper_state()])}")
+                            print(f"Current Pose: {np.stack([rs['TargetTCPPose'] for rs in env.get_robot_state()])}")
+
+                    if execute_place:
+                        current_pose = np.array(np.stack([rs['TargetTCPPose'] for rs in env.get_robot_state()]))
+                        if np.allclose(current_pose, DEFAULT_PLACE_POSE):
+                            for robot_idx in control_robot_idx_list:
+                                gripper_target_pos[robot_idx] = 0
+                            target_pose = np.copy(DEFAULT_HOME_POSE)
+                            execute_place = False
 
                     if start_policy:
                         break
