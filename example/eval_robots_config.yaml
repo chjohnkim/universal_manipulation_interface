@@ -10,8 +10,8 @@
       "robot_obs_latency": 0.0002, "robot_action_latency": 0.1, "tcp_offset": 0.21,
       # table height for finger-table collision avoidance
       # -inf to disable
-      "height_threshold": 0 # ground_height: -0.55, #-0.085, #-0.024, # Height w.r.t. base frame
-      "husky_threshold": -0.25, # y-limit w.r.t. base frame. Workspace is facing -y direction
+      "height_threshold": -0.03, # ground_height: -0.55, #-0.085, #-0.024, # Height w.r.t. base frame
+      "husky_threshold": 0, #-0.25, # y-limit w.r.t. base frame. Workspace is facing -y direction
       # sphere collision primitive size and location for inter-gripper collision avoidance
       # 0 to disable
       "sphere_radius": 0.1, "sphere_center": [0, -0.06, -0.185]

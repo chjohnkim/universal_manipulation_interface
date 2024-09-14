@@ -343,6 +343,7 @@ def get_finger_canonical_polygon(height=0.37, top_width=0.25, bottom_width=1.4):
     return coords
 
 def draw_predefined_mask(img, color=(0,0,0), mirror=True, gripper=True, finger=True, use_aa=False):
+    return img
     all_coords = list()
     if mirror:
         all_coords.extend(get_mirror_canonical_polygon())
