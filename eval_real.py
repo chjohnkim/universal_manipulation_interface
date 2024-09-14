@@ -61,8 +61,12 @@ from umi.common.pose_util import pose_to_mat, mat_to_pose
 
 OmegaConf.register_new_resolver("eval", eval, replace=True)
 
-DEFAULT_HOME_POSE = np.array([[0.12357797, -0.42613301,  0.12051668,  0.07648574, -2.91123652,  0.97365308]])
-DEFAULT_PLACE_POSE = np.array([[-0.39994505, -0.19403139,  0.13250884, -1.61301315, -2.01612091,  0.62840259]])
+#DEFAULT_HOME_POSE = np.array([[0.12357797, -0.42613301,  0.12051668,  0.07648574, -2.91123652,  0.97365308]])
+#DEFAULT_PLACE_POSE1 = np.array([[-0.39994505, -0.19403139,  0.13250884, -1.61301315, -2.01612091,  0.62840259]])
+#DEFAULT_PLACE_POSE2 = np.array([[-0.39994505, -0.19403139,  0.13250884, -1.61301315, -2.01612091,  0.62840259]])
+DEFAULT_HOME_POSE = np.array([[0.07694867, -0.51140469,  0.15070903,  2.37816143, -0.09368005,  0.08724988]])
+DEFAULT_PLACE_POSE1 = np.array([[0.02468867227437443, -0.5112246870994449, 0.152429029345515, 2.3781614303589023, -0.09368004649880722, 0.08724988251926041]])
+DEFAULT_PLACE_POSE2 = np.array([[0.024688686710721216, -0.5158646137714775, 0.18353437288599483, 2.37816143023151, -0.09368004687151163, 0.08724988279573753]])
 
 def solve_table_collision(ee_pose, gripper_width, height_threshold):
     finger_thickness = 25.5 / 1000
@@ -420,17 +424,31 @@ def main(input, output, robot_config,
                         elif key_stroke == KeyCode(char='h'):
                             target_pose = np.copy(DEFAULT_HOME_POSE)                
                         elif key_stroke == KeyCode(char='p'):
-                            execute_place = True
-                            target_pose = np.copy(DEFAULT_PLACE_POSE)     
+                            execute_place = 'stage1'
+                            target_pose = np.copy(DEFAULT_PLACE_POSE1)     
                         elif key_stroke == KeyCode(char='t'):
                             print(f"Gripper Pose: {np.asarray([gs['gripper_position'] for gs in env.get_gripper_state()])}")
-                            print(f"Current Pose: {np.stack([rs['TargetTCPPose'] for rs in env.get_robot_state()])}")
+                            print(f"Current Pose: {np.stack([rs['TargetTCPPose'] for rs in env.get_robot_state()]).tolist()}")
 
-                    if execute_place:
+                    # Placing Routine in 3 stages
+                    # Stage 1: go to waypoint 1
+                    if execute_place=='stage1':
                         current_pose = np.array(np.stack([rs['TargetTCPPose'] for rs in env.get_robot_state()]))
-                        if np.allclose(current_pose, DEFAULT_PLACE_POSE):
+                        if np.allclose(current_pose, DEFAULT_PLACE_POSE1):
+                            execute_place = 'stage2'
+                            target_pose = np.copy(DEFAULT_PLACE_POSE2)
+                    # Stage 2: Go to place position and release gripper. Go to waypoint 1
+                    if execute_place=='stage2':
+                        current_pose = np.array(np.stack([rs['TargetTCPPose'] for rs in env.get_robot_state()]))
+                        if np.allclose(current_pose, DEFAULT_PLACE_POSE2):                    
                             for robot_idx in control_robot_idx_list:
                                 gripper_target_pos[robot_idx] = 0
+                            target_pose = np.copy(DEFAULT_PLACE_POSE1)
+                            execute_place = 'stage3'
+                    # Stage 3: Go to home position
+                    if execute_place=='stage3':
+                        current_pose = np.array(np.stack([rs['TargetTCPPose'] for rs in env.get_robot_state()]))
+                        if np.allclose(current_pose, DEFAULT_PLACE_POSE1):                    
                             target_pose = np.copy(DEFAULT_HOME_POSE)
                             execute_place = False
 
