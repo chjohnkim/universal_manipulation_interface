@@ -223,11 +223,11 @@ class GripperDriver(object):
     def calibrate_gripper(self):
         print("Calibrating gripper...", end=" ")
         self.set_operating_mode(self.OPERATING_MODE['current'])
-        self.set_current(300) # NOTE: Hardcoded value
+        self.set_current(600) # NOTE: Hardcoded value
         time.sleep(1.5) # NOTE: Hardcoded value
         position, res = self.get_position()
         self.closed_pos = position
-        self.open_pos = self.closed_pos - 1024 # NOTE: Hardcoded value
+        self.open_pos = self.closed_pos - 1224 # NOTE: Hardcoded value
         self.calibrated = True
         self.set_operating_mode(self.OPERATING_MODE['extended_position'])
         self.open_gripper(wait=True)
